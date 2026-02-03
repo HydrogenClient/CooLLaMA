@@ -1,42 +1,51 @@
-import os
-import json
-from flask import Flask, request, jsonify
-import requests
+let conversationHistory = [];
 
-app = Flask(__name__)
+export default async function handler(req, res) {
+  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
-HF_API_TOKEN = os.environ.get("HF_API_TOKEN")
-HF_MODEL = "tiiuae/gemini-2-2b"
+  const message = req.body?.message;
+  if (!message) return res.status(400).json({ error: "Message is required" });
 
-@app.route("/api/chat", methods=["POST"])
-def chat():
-    data = request.get_json()
-    user_message = data.get("message", "")
-    
-    # Build prompt
-    prompt = """You are CooLLaMA, a fun and helpful chatbot for a website.
+  const HF_API_TOKEN = process.env.HF_API_TOKEN || "";
+  if (!HF_API_TOKEN) return res.status(500).json({ error: "HF_API_TOKEN not set" });
+
+  conversationHistory.push(`User: ${message}`);
+  if (conversationHistory.length > 10) conversationHistory.shift();
+
+  const prompt = `
+You are CooLLaMA, a fun and helpful chatbot.
 Answer clearly and cheerfully.
 
-User: {user_message}
-CooLLaMA:"""
-    
-    headers = {
-        "Authorization": f"Bearer {HF_API_TOKEN}",
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "inputs": prompt
-    }
-    
-    response = requests.post(
-        f"https://api-inference.huggingface.co/models/{HF_MODEL}",
-        headers=headers,
-        json=payload
-    )
-    
-    result = response.json()
-    text = result[0].get("generated_text", "Sorry, I couldn't respond.")
-    return jsonify({"response": text})
+${conversationHistory.join("\n")}
+CooLLaMA:
+`;
 
-if __name__ == "__main__":
-    app.run(debug=True)
+  try {
+    const response = await fetch("https://api-inference.huggingface.co/models/tiiuae/gemini-2-2b", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${HF_API_TOKEN}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ inputs: prompt }),
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      console.error("HF API error:", text);
+      return res.status(500).json({ response: "Hugging Face API error" });
+    }
+
+    const data = await response.json();
+    const botResponse = data?.[0]?.generated_text?.replace(prompt, "").trim() || "Sorry, I couldn't respond.";
+
+    conversationHistory.push(`CooLLaMA: ${botResponse}`);
+    if (conversationHistory.length > 10) conversationHistory.shift();
+
+    res.status(200).json({ response: botResponse });
+
+  } catch (err) {
+    console.error("Server error:", err);
+    res.status(500).json({ response: "Internal server error" });
+  }
+}

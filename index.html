@@ -1,34 +1,42 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>CooLLaMA</title>
+<meta charset="UTF-8">
+<title>CooLLaMA Chatbot</title>
+<style>
+  body { font-family: sans-serif; padding: 20px; }
+  #chat { margin-top: 20px; max-width: 600px; }
+  .message { margin-bottom: 10px; }
+  .user { color: blue; }
+  .bot { color: green; }
+</style>
 </head>
 <body>
-    <h1>CooLLaMA</h1>
-    <input id="userMessage" placeholder="Ask CooLLaMA something..." />
-    <button onclick="sendMessage()">Send</button>
-    <div id="chat"></div>
+<h1>CooLLaMA 🤖</h1>
+<input id="userMessage" placeholder="Ask me something..." style="width:70%;">
+<button onclick="sendMessage()">Send</button>
+<div id="chat"></div>
 
-    <script>
-    async function sendMessage() {
-        const msg = document.getElementById("userMessage").value;
-<<<<<<< HEAD
-<<<<<<<< HEAD:index.html
-        const res = await fetch("https://https://coollama.vercel.app/api/chat", {
-========
-        const res = await fetch("https://https://coollama-backend.vercel.app/api/chat", {
->>>>>>>> 4cfef14a98b7052642cb61dc3b82b6103c9f7555:frontend/index.html
-=======
-        const res = await fetch("https://https://coollama-backend.vercel.app/api/chat", {
->>>>>>> 4cfef14a98b7052642cb61dc3b82b6103c9f7555
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({message: msg})
-        });
-        const data = await res.json();
-        document.getElementById("chat").innerHTML += `<p><b>You:</b> ${msg}</p>`;
-        document.getElementById("chat").innerHTML += `<p><b>CooLLaMA:</b> ${data.response}</p>`;
-    }
-    </script>
+<script>
+async function sendMessage() {
+  const msg = document.getElementById("userMessage").value;
+  if (!msg) return;
+  const chatDiv = document.getElementById("chat");
+  chatDiv.innerHTML += `<div class="message user"><b>You:</b> ${msg}</div>`;
+  document.getElementById("userMessage").value = "";
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: msg })
+    });
+    const data = await res.json();
+    chatDiv.innerHTML += `<div class="message bot"><b>CooLLaMA:</b> ${data.response}</div>`;
+    chatDiv.scrollTop = chatDiv.scrollHeight;
+  } catch (err) {
+    chatDiv.innerHTML += `<div class="message bot"><b>CooLLaMA:</b> Error connecting to server.</div>`;
+  }
+}
+</script>
 </body>
 </html>

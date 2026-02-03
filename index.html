@@ -12,7 +12,15 @@
     <script>
     async function sendMessage() {
         const msg = document.getElementById("userMessage").value;
+<<<<<<< HEAD
+<<<<<<<< HEAD:index.html
         const res = await fetch("https://https://coollama.vercel.app/api/chat", {
+========
+        const res = await fetch("https://https://coollama-backend.vercel.app/api/chat", {
+>>>>>>>> 4cfef14a98b7052642cb61dc3b82b6103c9f7555:frontend/index.html
+=======
+        const res = await fetch("https://https://coollama-backend.vercel.app/api/chat", {
+>>>>>>> 4cfef14a98b7052642cb61dc3b82b6103c9f7555
             method: "POST",
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({message: msg})

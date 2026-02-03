@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CooLLaMA</title>
+</head>
+<body>
+    <h1>CooLLaMA</h1>
+    <input id="userMessage" placeholder="Ask CooLLaMA something..." />
+    <button onclick="sendMessage()">Send</button>
+    <div id="chat"></div>
+
+    <script>
+    async function sendMessage() {
+        const msg = document.getElementById("userMessage").value;
+        const res = await fetch("https://YOUR_VERCEL_APP_URL/api/chat", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({message: msg})
+        });
+        const data = await res.json();
+        document.getElementById("chat").innerHTML += `<p><b>You:</b> ${msg}</p>`;
+        document.getElementById("chat").innerHTML += `<p><b>CooLLaMA:</b> ${data.response}</p>`;
+    }
+    </script>
+</body>
+</html>
